@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华懿杯辩论赛 · 记分表</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e8e8f0;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .header p { color: #8899aa; font-size: 0.85rem; }
+
+        .judge-bar {
+            display: flex; justify-content: center; gap: 12px;
+            margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+        }
+        .judge-bar label { font-size: 0.9rem; color: #aab; }
+        .judge-bar select {
+            padding: 8px 18px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: #ffd200; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; outline: none;
+        }
+        .judge-bar select option { background: #1a1a2e; color: #eee; }
+
+        .team-bar {
+            display: flex; justify-content: center; gap: 20px;
+            margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .team-bar .input-group { display: flex; align-items: center; gap: 8px; }
+        .team-bar label { font-size: 0.9rem; color: #aab; white-space: nowrap; }
+        .team-bar input {
+            padding: 8px 16px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: #eee; font-size: 0.95rem; width: 200px; outline: none;
+        }
+        .team-bar input:focus { border-color: #ffd200; }
+
+        .score-table {
+            width: 100%; border-collapse: collapse;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            margin-bottom: 24px;
+        }
+        .score-table thead th {
+            background: rgba(255,210,0,0.12);
+            padding: 14px 10px; font-size: 0.85rem;
+            color: #ffd200; letter-spacing: 1px;
+            border-bottom: 2px solid rgba(255,210,0,0.2);
+            text-align: center; white-space: nowrap;
+        }
+        .score-table tbody td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            vertical-align: middle; font-size: 0.85rem;
+        }
+        .score-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+        .score-table .item-name { font-weight: 600; color: #ddd; white-space: nowrap; }
+        .score-table .item-desc { color: #778; font-size: 0.75rem; line-height: 1.5; max-width: 400px; }
+
+        .score-input {
+            width: 68px; padding: 8px 6px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.06);
+            color: #ffd200; font-size: 0.95rem; font-weight: 600;
+            text-align: center; outline: none; transition: border-color 0.2s;
+        }
+        .score-input:focus { border-color: #ffd200; background: rgba(255,210,0,0.08); }
+        .score-input::-webkit-outer-spin-button,
+        .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .na-cell { text-align: center; color: #556; font-weight: 600; font-size: 0.9rem; }
+        .row-total { text-align: center; font-weight: 700; color: #ffd200; font-size: 1rem; }
+
+        .total-section {
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 24px; padding: 20px 24px;
+            background: rgba(255,210,0,0.06);
+            border: 1px solid rgba(255,210,0,0.15);
+            border-radius: 16px; margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .total-section .total-label { font-size: 1.1rem; color: #aab; letter-spacing: 1px; }
+        .total-section .total-value {
+            font-size: 2.4rem; font-weight: 800;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent; min-width: 120px; text-align: right;
+        }
+        .total-section .total-unit { font-size: 0.95rem; color: #8899aa; }
+
+        .judges-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px; padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .judges-section h2 {
+            font-size: 1.1rem; color: #ffd200; margin-bottom: 18px;
+            letter-spacing: 1px; display: flex; align-items: center; gap: 8px;
+        }
+        .judges-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 20px; margin-bottom: 20px;
+        }
+        .judge-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 18px; text-align: center;
+        }
+        .judge-card .judge-title { font-size: 0.85rem; color: #8899aa; margin-bottom: 10px; letter-spacing: 1px; }
+        .judge-score-input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.06);
+            color: #ffd200; font-size: 1.4rem; font-weight: 700;
+            text-align: center; outline: none;
+        }
+        .judge-score-input:focus { border-color: #ffd200; }
+        .judge-score-input::-webkit-outer-spin-button,
+        .judge-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .judge-card .judge-sub { font-size: 0.75rem; color: #667; margin-top: 8px; }
+
+        .final-average {
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; padding: 20px;
+            background: linear-gradient(90deg, rgba(247,151,30,0.1), rgba(255,210,0,0.1));
+            border: 2px solid rgba(255,210,0,0.3);
+            border-radius: 16px; flex-wrap: wrap;
+        }
+        .final-average .avg-label { font-size: 1.2rem; font-weight: 600; color: #ffd200; letter-spacing: 2px; }
+        .final-average .avg-value {
+            font-size: 3rem; font-weight: 900;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent; min-width: 140px; text-align: center;
+        }
+        .final-average .avg-unit { font-size: 1rem; color: #8899aa; }
+
+        .btn-row {
+            display: flex; justify-content: center; gap: 16px;
+            margin-top: 24px; flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 36px; border: none; border-radius: 30px;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer;
+            transition: all 0.25s; letter-spacing: 1px;
+        }
+        .btn-primary { background: linear-gradient(90deg, #f7971e, #ffd200); color: #1a1a2e; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,210,0,0.35); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2); color: #ccd;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+        .hint { text-align: center; color: #667; font-size: 0.8rem; margin-top: 16px; line-height: 1.8; }
+
+        @media (max-width: 900px) {
+            .judges-grid { grid-template-columns: 1fr; }
+            .score-table .item-desc { display: none; }
+            .score-table thead th, .score-table tbody td { padding: 8px 4px; font-size: 0.75rem; }
+            .score-input { width: 52px; font-size: 0.8rem; padding: 6px 2px; }
+            .header h1 { font-size: 1.3rem; }
+            .total-section .total-value { font-size: 1.8rem; }
+            .final-average .avg-value { font-size: 2.2rem; }
+        }
+        @media print {
+            body { background: white; color: #333; padding: 10px; }
+            .header h1 { color: #333; -webkit-text-fill-color: #333; }
+            .score-table { background: white; box-shadow: none; border: 1px solid #ccc; }
+            .score-input { background: white; border: 1px solid #ccc; color: #333; }
+            .judges-section { background: white; box-shadow: none; border: 1px solid #ccc; }
+            .judge-card { background: #fafafa; border: 1px solid #ddd; }
+            .btn-row { display: none; }
+            .final-average { background: #fafafa; border-color: #ccc; }
+            .final-average .avg-value { color: #333; -webkit-text-fill-color: #333; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🏆 计算机与软件学院第六届"华懿杯"辩论赛</h1>
+        <p>评分表 · 记分员专用（最终修正版）</p>
+    </div>
+
+    <div class="judge-bar">
+        <label>当前录入评委：</label>
+        <select id="currentJudge">
+            <option value="0">评委一</option>
+            <option value="1">评委二</option>
+            <option value="2">评委三</option>
+        </select>
+    </div>
+
+    <div class="team-bar">
+        <div class="input-group">
+            <label>队伍名称：</label>
+            <input type="text" id="teamName" placeholder="请输入队伍名称">
+        </div>
+        <div class="input-group">
+            <label>场次：</label>
+            <input type="text" id="roundInfo" placeholder="如：第一场" style="width:120px;">
+        </div>
+    </div>
+
+    <table class="score-table">
+        <thead>
+            <tr>
+                <th style="min-width:140px;">评分内容</th>
+                <th style="min-width:280px;">评分标准</th>
+                <th>一辩</th>
+                <th>二辩</th>
+                <th>三辩</th>
+                <th>四辩</th>
+                <th>合计</th>
+            </tr>
+        </thead>
+        <tbody id="scoreBody">
+            <!-- 开篇立论：一辩 -->
+            <tr data-item="开篇立论" data-max="20">
+                <td class="item-name">开篇立论<br><small style="color:#8899aa;">（20分）</small></td>
+                <td class="item-desc">0-10分：吐字模糊，语言繁琐缺少逻辑，缺少论据，对论题无正确认知理解或立论偏离论题。<br>10-20分：吐字清晰，语言简洁且表达通顺，论据有信服力，分析角度有说服力和逻辑性，对论题有正确理解。</td>
+                <td><input type="number" class="score-input" min="0" max="20" step="0.5" data-item="开篇立论" data-role="一辩"></td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td class="row-total" data-total="开篇立论">0</td>
+            </tr>
+            <!-- 攻辩：二辩、三辩（各10分） -->
+            <tr data-item="攻辩" data-max="20">
+                <td class="item-name">攻辩<br><small style="color:#8899aa;">（20分）</small></td>
+                <td class="item-desc">0-3分：吐字模糊，语言繁琐缺少逻辑，回避对方提问或对对方已回答的问题抓住不放。<br>4-7分：吐字较清晰且能用简练语言提问回答，思维明晰，能抓住对方发言漏洞辩驳。<br>8-10分：吐字清晰且能用精炼的语言提问或回答，可以合理的引用实例进行辩驳或能够围绕己方观点进行辩驳。</td>
+                <td class="na-cell">/</td>
+                <td><input type="number" class="score-input" min="0" max="10" step="0.5" data-item="攻辩" data-role="二辩"></td>
+                <td><input type="number" class="score-input" min="0" max="10" step="0.5" data-item="攻辩" data-role="三辩"></td>
+                <td class="na-cell">/</td>
+                <td class="row-total" data-total="攻辩">0</td>
+            </tr>
+            <!-- 攻辩小结：一辩 -->
+            <tr data-item="攻辩小结" data-max="10">
+                <td class="item-name">攻辩小结<br><small style="color:#8899aa;">（10分）</small></td>
+                <td class="item-desc">0-5分：未全面归纳解读对方的矛盾对错且缺少正确辩驳和追击，没有基于攻辩形式进行对己方观点的进一步阐述或阐述不到位。<br>6-10分：能够细节抓住对方的失误进行辩驳追击，有对己方观点有进一步陈述，辩护语言有理有据信服力强。</td>
+                <td><input type="number" class="score-input" min="0" max="10" step="0.5" data-item="攻辩小结" data-role="一辩"></td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td class="row-total" data-total="攻辩小结">0</td>
+            </tr>
+            <!-- 自由辩论：四位辩手各5分 -->
+            <tr data-item="自由辩论" data-max="20">
+                <td class="item-name">自由辩论<br><small style="color:#8899aa;">（20分）</small></td>
+                <td class="item-desc">0-1分：攻防轮换混乱且不能针对对方的论点和论据进行系统反驳，语言表达模糊不明确。<br>2-3分：反应机敏，语言简练且辩论思路清晰，能够对对方发言漏洞进行辩驳。<br>4-5分：可以合理的引用实例进行辩论，语言有感染力且能够针对对方的论点进行发言。</td>
+                <td><input type="number" class="score-input" min="0" max="5" step="0.5" data-item="自由辩论" data-role="一辩"></td>
+                <td><input type="number" class="score-input" min="0" max="5" step="0.5" data-item="自由辩论" data-role="二辩"></td>
+                <td><input type="number" class="score-input" min="0" max="5" step="0.5" data-item="自由辩论" data-role="三辩"></td>
+                <td><input type="number" class="score-input" min="0" max="5" step="0.5" data-item="自由辩论" data-role="四辩"></td>
+                <td class="row-total" data-total="自由辩论">0</td>
+            </tr>
+            <!-- 总结陈词：四辩 -->
+            <tr data-item="总结陈词" data-max="20">
+                <td class="item-name">总结陈词<br><small style="color:#8899aa;">（20分）</small></td>
+                <td class="item-desc">0-10分：未能合理正确的总结己方的立场且未对对方的论点进行合理反驳。<br>10-20分：可以全面总结本方的立场并系统反驳对方的进攻，为本方辩护。语言表达有说服力且能够和开篇理论首尾呼应。</td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td class="na-cell">/</td>
+                <td><input type="number" class="score-input" min="0" max="20" step="0.5" data-item="总结陈词" data-role="四辩"></td>
+                <td class="row-total" data-total="总结陈词">0</td>
+            </tr>
+            <!-- 团队配合及临场反应：团队 -->
+            <tr data-item="团队配合及临场反应" data-max="10">
+                <td class="item-name">团队配合及临场反应<br><small style="color:#8899aa;">（10分）</small></td>
+                <td class="item-desc">辩论队整体形象、辩风、整体配合、语言运用、临场反应（语言、风度、举止、表情）；团队精神，相互支持；论辩衔接流畅；反应敏捷，应对能力强；问答形成一个有机整体。</td>
+                <td colspan="4" style="text-align:center;">
+                    <input type="number" class="score-input" min="0" max="10" step="0.5" data-item="团队配合及临场反应" data-role="团队" style="width:120px;">
+                </td>
+                <td class="row-total" data-total="团队配合及临场反应">0</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <span class="total-label">当前评委（<span id="judgeLabel">评委一</span>）总分：</span>
+        <span class="total-value" id="currentTotal">0</span>
+        <span class="total-unit">分</span>
+    </div>
+
+    <div class="judges-section">
+        <h2>📊 三位评委总分录入</h2>
+        <div class="judges-grid">
+            <div class="judge-card">
+                <div class="judge-title">评委一 总分</div>
+                <input type="number" class="judge-score-input" id="judge1Score" min="0" max="100" step="0.1" placeholder="0">
+                <div class="judge-sub">满分 100 分</div>
+            </div>
+            <div class="judge-card">
+                <div class="judge-title">评委二 总分</div>
+                <input type="number" class="judge-score-input" id="judge2Score" min="0" max="100" step="0.1" placeholder="0">
+                <div class="judge-sub">满分 100 分</div>
+            </div>
+            <div class="judge-card">
+                <div class="judge-title">评委三 总分</div>
+                <input type="number" class="judge-score-input" id="judge3Score" min="0" max="100" step="0.1" placeholder="0">
+                <div class="judge-sub">满分 100 分</div>
+            </div>
+        </div>
+
+        <div class="final-average">
+            <span class="avg-label">最终平均分</span>
+            <span class="avg-value" id="finalAverage">0</span>
+            <span class="avg-unit">分</span>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" onclick="fillCurrentToJudge()">将当前总分填入当前评委</button>
+        <button class="btn btn-secondary" onclick="resetAll()">重置全部</button>
+        <button class="btn btn-secondary" onclick="window.print()">打印评分表</button>
+    </div>
+
+    <p class="hint">
+        💡 操作说明：<br>
+        1. 选择当前评委 → 填写各环节分数 → 系统自动计算总分<br>
+        2. 点击「将当前总分填入当前评委」→ 总分自动填入下方对应位置<br>
+        3. 切换评委重复操作 → 三位评委总分填完后自动计算最终平均分<br>
+        <strong style="color:#ffd200;">📌 评分对象：开篇立论=一辩，攻辩=二辩+三辩（各10分），攻辩小结=一辩，自由辩论=四位辩手各5分，总结陈词=四辩，团队配合=团队</strong>
+    </p>
+</div>
+
+<script>
+    const judgeNames = ['评委一', '评委二', '评委三'];
+    const judgeData = [{}, {}, {}];
+    let currentJudgeIndex = 0;
+
+    const judgeSelect = document.getElementById('currentJudge');
+    const judgeLabel = document.getElementById('judgeLabel');
+    const currentTotalEl = document.getElementById('currentTotal');
+    const scoreInputs = document.querySelectorAll('.score-input');
+    const judgeScoreInputs = [
+        document.getElementById('judge1Score'),
+        document.getElementById('judge2Score'),
+        document.getElementById('judge3Score')
+    ];
+    const finalAverageEl = document.getElementById('finalAverage');
+
+    judgeSelect.addEventListener('change', function() {
+        saveCurrentJudgeData();
+        currentJudgeIndex = parseInt(this.value);
+        judgeLabel.textContent = judgeNames[currentJudgeIndex];
+        loadJudgeData();
+        updateAllTotals();
+    });
+
+    function saveCurrentJudgeData() {
+        const data = {};
+        scoreInputs.forEach(input => {
+            if (input.value !== '') data[input.dataset.item] = input.value;
+        });
+        judgeData[currentJudgeIndex] = data;
+    }
+
+    function loadJudgeData() {
+        const data = judgeData[currentJudgeIndex];
+        scoreInputs.forEach(input => {
+            const item = input.dataset.item;
+            input.value = data[item] !== undefined ? data[item] : '';
+        });
+    }
+
+    function calculateCurrentTotal() {
+        let total = 0;
+        scoreInputs.forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+        return Math.round(total * 10) / 10;
+    }
+
+    function updateRowTotals() {
+        // 开篇立论
+        let t1 = 0;
+        document.querySelectorAll('input[data-item="开篇立论"]').forEach(i => t1 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="开篇立论"]').textContent = Math.round(t1 * 10) / 10;
+
+        // 攻辩
+        let t2 = 0;
+        document.querySelectorAll('input[data-item="攻辩"]').forEach(i => t2 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="攻辩"]').textContent = Math.round(t2 * 10) / 10;
+
+        // 攻辩小结
+        let t3 = 0;
+        document.querySelectorAll('input[data-item="攻辩小结"]').forEach(i => t3 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="攻辩小结"]').textContent = Math.round(t3 * 10) / 10;
+
+        // 自由辩论
+        let t4 = 0;
+        document.querySelectorAll('input[data-item="自由辩论"]').forEach(i => t4 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="自由辩论"]').textContent = Math.round(t4 * 10) / 10;
+
+        // 总结陈词
+        let t5 = 0;
+        document.querySelectorAll('input[data-item="总结陈词"]').forEach(i => t5 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="总结陈词"]').textContent = Math.round(t5 * 10) / 10;
+
+        // 团队配合
+        let t6 = 0;
+        document.querySelectorAll('input[data-item="团队配合及临场反应"]').forEach(i => t6 += parseFloat(i.value) || 0);
+        document.querySelector('[data-total="团队配合及临场反应"]').textContent = Math.round(t6 * 10) / 10;
+    }
+
+    function updateAllTotals() {
+        updateRowTotals();
+        currentTotalEl.textContent = calculateCurrentTotal();
+        updateFinalAverage();
+    }
+
+    function updateFinalAverage() {
+        let sum = 0, count = 0;
+        judgeScoreInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) { sum += val; count++; }
+        });
+        finalAverageEl.textContent = count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
+    }
+
+    scoreInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const max = parseFloat(this.max);
+            const min = parseFloat(this.min) || 0;
+            let val = parseFloat(this.value);
+            if (!isNaN(val)) {
+                if (val > max) this.value = max;
+                if (val < min) this.value = min;
+            }
+            updateAllTotals();
+        });
+    });
+
+    judgeScoreInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const val = parseFloat(this.value);
+            if (!isNaN(val)) {
+                if (val > 100) this.value = 100;
+                if (val < 0) this.value = 0;
+            }
+            updateFinalAverage();
+        });
+    });
+
+    function fillCurrentToJudge() {
+        const total = calculateCurrentTotal();
+        if (total === 0) { alert('请先填写评分！'); return; }
+        judgeScoreInputs[currentJudgeIndex].value = total;
+        updateFinalAverage();
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ 已填入';
+        setTimeout(() => btn.textContent = originalText, 1200);
+    }
+
+    function resetAll() {
+        if (!confirm('确定要重置所有分数吗？此操作不可恢复。')) return;
+        scoreInputs.forEach(input => input.value = '');
+        judgeScoreInputs.forEach(input => input.value = '');
+        judgeData[0] = {}; judgeData[1] = {}; judgeData[2] = {};
+        currentJudgeIndex = 0;
+        judgeSelect.value = '0';
+        judgeLabel.textContent = judgeNames[0];
+        document.getElementById('teamName').value = '';
+        document.getElementById('roundInfo').value = '';
+        updateAllTotals();
+        updateFinalAverage();
+    }
+
+    updateAllTotals();
+</script>
+
+</body>
+</html>
